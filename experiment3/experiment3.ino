@@ -6,9 +6,9 @@
 #include "MPU9150.h"
 #include "TopDetector.h"
 
-#define PIN_SERVO         10
-#define ACCEL_THRESHOLD   2.0
-#define N_DATA            30
+#define PIN_SERVO         10    // サーボのピン
+#define ACCEL_THRESHOLD   2.0   // 加速度のノルムがこれを超えたら始まる
+#define N_DATA            30    // データ数
 
 Servo servo;
 TopDetector td;
@@ -66,7 +66,7 @@ void loop() {
     // 頂点時間を過ぎたらサーボを動かしてパラシュートを展開する
     if ( t > top_time ) {
       servo.write(90);
-      //stop_arduino();  // 停止
+      stop_arduino();  // 停止
     }
   }
 }
