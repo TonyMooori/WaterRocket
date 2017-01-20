@@ -6,9 +6,11 @@
 #include "MPU9150.h"
 #include "TopDetector.h"
 
+#define ACCEL_TIME        100   // 加速されている時間[ms]
 #define PIN_SERVO         10    // サーボのピン
 #define ACCEL_THRESHOLD   2.0   // 加速度のノルムがこれを超えたら始まる
-#define N_DATA            30    // データ数
+#define N_NECESSARY       20    // 最低限必要なデータ数
+#define N_DATA            10    // データ数
 
 Servo servo;
 TopDetector td;
@@ -40,7 +42,7 @@ void loop() {
 
     // trueになったとき，上向きの加速度があるため少し待つ
     if( is_started )
-      delay(1000);
+      delay(ACCEL_TIME);
     
   } else {
     // 加速度が検出された場合，計算していく
@@ -49,6 +51,12 @@ void loop() {
     float y = get_height();         // 高度
     td.push(t, y);
 
+    // N_DATAだけ貯まるごとに頂点時間を更新
+    if (td.get_n_data() >= N_NECESSARY && td.get_n_data() % N_DATA == 0 ) {
+      td.calc();
+      top_time = td.get_top_time();
+    }
+
     Serial.print("time\t");
     Serial.print(t);
     Serial.print("\ty\t");
@@ -56,12 +64,6 @@ void loop() {
     Serial.print("\tend\t");
     Serial.print(top_time);
     Serial.print("\n");
-
-    // N_DATAだけ貯まるごとに頂点時間を更新
-    if (td.get_n_data() % N_DATA == 0 ) {
-      td.calc();
-      top_time = td.get_top_time();
-    }
 
     // 頂点時間を過ぎたらサーボを動かしてパラシュートを展開する
     if ( t > top_time ) {
